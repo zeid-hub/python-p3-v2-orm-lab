@@ -20,47 +20,41 @@ class TestReviewProperties:
     def test_review_valid(self):
         '''validates name, job title, department id are valid'''
         # should not raise exception
-        employee = Employee.create("Lee", "Manager", Department.create(
-            "Payroll", "Building A, 5th Floor"))
+        department = Department.create("Payroll", "Building A, 5th Floor")
+        employee = Employee.create("Lee", "Manager", department.id)
+
         review = Review.create(
-            2023, "Excellent work ethic! Outstanding programming skills!", employee)
+            2023, "Excellent work ethic! Outstanding programming skills!", employee.id)
 
     def test_year_is_int(self):
         '''validates year property is assigned int'''
         with pytest.raises(ValueError):
-            employee = Employee.create("Lee", "Manager", Department.create(
-                "Payroll", "Building A, 5th Floor"))
+            department = Department.create("Payroll", "Building A, 5th Floor")
+            employee = Employee.create("Lee", "Manager", department.id)
+
             review = Review.create(
-                "this century", "Excellent work ethic! Outstanding programming skills!", employee)
+                "this century", "Excellent work ethic! Outstanding programming skills!", employee.id)
 
     def test_year_value(self):
         '''validates year property length >= 2000'''
         with pytest.raises(ValueError):
-            employee = Employee.create("Lee", "Manager", Department.create(
-                "Payroll", "Building A, 5th Floor"))
+            department = Department.create("Payroll", "Building A, 5th Floor")
+            employee = Employee.create("Lee", "Manager", department.id)
+
             review = Review.create(
-                1999, "Excellent work ethic! Outstanding programming skills!", employee)
+                1999, "Excellent work ethic! Outstanding programming skills!", employee.id)
 
     def test_summary_string_length(self):
         '''validates summary property length > 0'''
         with pytest.raises(ValueError):
-            employee = Employee.create("Lee", "Manager", Department.create(
-                "Payroll", "Building A, 5th Floor"))
-            review = Review.create(2023, "", employee)
-
-    def test_employee_property_type_assignment(self):
-        with pytest.raises(ValueError):
-            employee = Employee.create("Lee", "Manager", Department.create(
-                "Payroll", "Building A, 5th Floor"))
-            review = Review.create(
-                2023, "Excellent work ethic! Outstanding programming skills!", employee)
-            review.employee = 7  # Must be Employee object
+            department = Department.create("Payroll", "Building A, 5th Floor")
+            employee = Employee.create("Lee", "Manager", department.id)
+            review = Review.create(2023, "", employee.id)
 
     def test_employee_fk_property_assignment(self):
         with pytest.raises(ValueError):
             department = Department.create("Payroll", "Building A, 5th Floor")
-            employee = Employee.create("Lee", "Manager", department)
+            employee = Employee.create("Lee", "Manager", department.id)
             review = Review.create(
-                2023, "Excellent work ethic! Outstanding programming skills!", employee)
-            review.employee = Employee("Kai", "Web Developer", Department(
-                "HR", "Building C"))  # Department not in db
+                2023, "Excellent work ethic! Outstanding programming skills!", employee.id)
+            review.employee_id = 100  # id not in employees table

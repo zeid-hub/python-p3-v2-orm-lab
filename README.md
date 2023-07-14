@@ -18,7 +18,7 @@ messages to complete your work in the `lib/` folder.
 ![orm lab erd](https://curriculum-content.s3.amazonaws.com/6676/python-p3-v2-orm/orm_lab_erd.png)
 
 This lab involves enhancing the company data model from the ORM lessons. You
-will implement a class named `Review` that encapsulates a annual performance
+will implement a class named `Review` that encapsulates an annual performance
 review for an employee. There is a one-to-many relationship between `Employee`
 and `Review`.
 
@@ -32,10 +32,8 @@ ORM lessons. You will add functionality for the new `Review` class in this lab.
 
 ### **Environment**
 
-Our environment is going to be generated in `lib/__init__.py` (rather than
-`lib/config.py`) using a series of imports and instantiations. Here we will
-generate a `sqlite3.Connection` object, `CONN`, and a `sqlite3.Cursor` object,
-`CURSOR` to be used throughout the lab.
+The environment is initialized in `lib/__init__.py` to generate a
+`sqlite3.Connection` object `CONN`, and a `sqlite3.Cursor` object `CURSOR`.
 
 ### Implementing `Review`
 
@@ -53,10 +51,13 @@ methods in a subsequent step):
 
 ### `save()`
 
-Create an instance method `save()` that saves a `Review` object to your
-database. Keep in mind the `employee` attribute references an `Employee` object,
-while the database table foreign key column stores the employee id as an
-integer.
+The instance method `save()` should persist the `Review` object to the "reviews"
+table:
+
+- Insert a new row with the `year`, `summary`, and `employee_id` values of the
+  current`Review` object.
+- Update the object id attribute using the primary key value of new row.
+- Save the object in the local dictionary.
 
 ### `create()`
 
@@ -78,18 +79,18 @@ columns for a "reviews" table row based on the `id` of the current object.
 This instance method should delete a "reviews" table row based on the `id` of
 the current object.
 
-### `new_from_db()`
+### `instance_from_db()`
 
-This class method should initialize a new instance of `Review` using values from
-a "review" table row passed as a list into the method. Since the table row
-stores the employee id as an integer, you need to use the `find_by_id` method to
-get an instance of `Employee` to associate with the new `Review` class instance
-that you create. Make sure you also set the `id` of the new `Review` instance.
-Finally, the method should return the newly created `Review` instance.
+This class method should return a `Review` class instance having the attribute
+values from the table row. You should check the dictionary for existing class
+instance using the row's primary key and set the instance attributes to the row
+data if found. If the dictionary does not contain a previously persisted object
+with that id, create a new class instance from the row data and add it to the
+dictionary. The method should return the cached object.
 
 ### `get_all()`
 
-This class method should return a list of `Review` instances for every record in
+This class method should return a list of `Review` instances for every row in
 the "reviews" table.
 
 ### `find_by_id()`
@@ -109,7 +110,7 @@ You can also experiment using the `lib/debug.py` file:
 
 ```bash
 ipdb> Review.get_all()
-[<Review 1: 2023, Efficient worker, Employee: Lee >, <Review 2: 2022, Good work ethic, Employee: Lee >, <Review 3: 2023, Excellent communication skills, Employee: Sasha >]
+
 ipdb>
 ```
 
@@ -117,9 +118,9 @@ ipdb>
 
 Let's add property methods to set rules for the `Review` attributes as follows:
 
-- `year` should be an integer that is greater or equal to 2000.
+- `year` should be an integer that is greater than or equal to 2000.
 - `summary` should be a non-empty string.
-- `employee` should reference an `Employee` class instance that has been
+- `employee_id` should be the id of an `Employee` class instance that has been
   persisted into the "employees" table.
 
 You can test your methods by running the tests in the
@@ -131,14 +132,15 @@ pytest lib/testing/review_property_test.py
 
 ### Update `Employee` to get a list of associated `Review` instances
 
-Update the `Employee` class with a new method `reviews()` ßfor getting
-associated `Review` instances that have been persisted to the database.
+Update the `Employee` class with a new method `reviews()` for getting associated
+`Review` instances that have been persisted to the database.
 
 ### `reviews()`
 
 This instance method should query the "reviews" table to get all rows where the
-foreign key column matches the id of the current `Employee` class instance. The
-method should return a list of `Review` objects for each matching table row.
+foreign key column `employee_id` matches the id of the current `Employee` class
+instance. The method should return a list of `Review` objects for each matching
+table row.
 
 NOTE: To avoid issues with circular imports, embed import the `Review` class
 within the `reviews()` method rather than at the module level.

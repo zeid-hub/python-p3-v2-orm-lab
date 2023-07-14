@@ -81,11 +81,11 @@ class TestReview:
         department.save()  # tested in department_test.py
 
         Employee.create_table()
-        employee = Employee("Sasha", "Manager", department)
+        employee = Employee("Sasha", "Manager", department.id)
         employee.save()
 
         Review.create_table()
-        review = Review(2023, "Excellent Python skills!", employee)
+        review = Review(2023, "Excellent Python skills!", employee.id)
         review.save()
 
         sql = """
@@ -94,7 +94,7 @@ class TestReview:
 
         row = CURSOR.execute(sql).fetchone()
         assert ((row[0], row[1], row[2], row[3]) ==
-                (review.id, review.year, review.summary, review.employee.id) ==
+                (review.id, review.year, review.summary, review.employee_id) ==
                 (review.id, 2023, "Excellent Python skills!", employee.id))
 
     def test_creates_review(self):
@@ -105,17 +105,17 @@ class TestReview:
         department.save()  # tested in department_test.py
 
         Employee.create_table()
-        employee = Employee.create("Kai", "Web Developer", department)
+        employee = Employee.create("Kai", "Web Developer", department.id)
 
         Review.create_table()
-        review = Review.create(2023, "Excellent Python skills!", employee)
+        review = Review.create(2023, "Excellent Python skills!", employee.id)
 
         sql = """
             SELECT * FROM reviews
         """
         row = CURSOR.execute(sql).fetchone()
         assert ((row[0], row[1], row[2], row[3]) ==
-                (review.id, review.year, review.summary, review.employee.id) ==
+                (review.id, review.year, review.summary, review.employee_id) ==
                 (review.id, 2023, "Excellent Python skills!", employee.id))
 
     def test_updates_row(self):
@@ -125,13 +125,13 @@ class TestReview:
         department = Department.create("Payroll", "Building A, 5th Floor")
 
         Employee.create_table()
-        employee = Employee.create("Raha", "Accountant", department)
+        employee = Employee.create("Raha", "Accountant", department.id)
 
         Review.create_table()
         review1 = Review.create(
-            2020, "Usually double checks their work", employee)
+            2020, "Usually double checks their work", employee.id)
         id1 = review1.id
-        review2 = Review.create(2000, "Takes long lunches", employee)
+        review2 = Review.create(2000, "Takes long lunches", employee.id)
         id2 = review2.id
 
         review1.year = 2023
@@ -140,14 +140,14 @@ class TestReview:
 
         # Confirm review1 updated
         review = Review.find_by_id(id1)
-        assert ((review.id, review.year, review.summary, review.employee.id) ==
-                (review1.id, review1.year, review1.summary, review1.employee.id) ==
+        assert ((review.id, review.year, review.summary, review.employee_id) ==
+                (review1.id, review1.year, review1.summary, review1.employee_id) ==
                 (id1, 2023, "Always double checks their work", employee.id))
 
         # Confirm review2 not updated
         review = Review.find_by_id(id2)
-        assert ((review.id, review.year, review.summary, review.employee.id) ==
-                (review2.id, review2.year, review2.summary, review2.employee.id) ==
+        assert ((review.id, review.year, review.summary, review.employee_id) ==
+                (review2.id, review2.year, review2.summary, review2.employee_id) ==
                 (id2, 2000, "Takes long lunches", employee.id))
 
     def test_deletes_row(self):
@@ -156,36 +156,36 @@ class TestReview:
         department = Department.create("Payroll", "Building A, 5th Floor")
 
         Employee.create_table()
-        employee = Employee.create("Raha", "Accountant", department)
+        employee = Employee.create("Raha", "Accountant", department.id)
 
         Review.create_table()
         review1 = Review.create(
-            2020, "Usually double checks their work", employee)
+            2020, "Usually double checks their work", employee.id)
         id1 = review1.id
-        review2 = Review.create(2000, "Takes long lunches", employee)
+        review2 = Review.create(2000, "Takes long lunches", employee.id)
         id2 = review2.id
 
         review1.delete()
         # assert row deleted
         assert (Review.find_by_id(id1) is None)
         # assert Review object not modified
-        assert ((review1.id, review1.year, review1.summary, review1.employee.id) ==
+        assert ((review1.id, review1.year, review1.summary, review1.employee_id) ==
                 (id1, 2020, "Usually double checks their work", employee.id))
 
         review = Review.find_by_id(id2)
         # assert review2 row not modified, review2 object not modified
-        assert ((review.id, review.year, review.summary, review.employee.id) ==
-                (review2.id, review2.year, review2.summary, review2.employee.id) ==
+        assert ((review.id, review.year, review.summary, review.employee_id) ==
+                (review2.id, review2.year, review2.summary, review2.employee_id) ==
                 (id2, 2000, "Takes long lunches", employee.id))
 
-    def test_creates_new_instance_from_db(self):
-        '''contains method "new_from_db()" that takes a db row and creates an Review instance.'''
+    def test_instance_from_db(self):
+        '''contains method "instance_from_db()" that takes a db row and creates an Review instance.'''
 
         Department.create_table()
         department = Department.create("Payroll", "Building A, 5th Floor")
 
         Employee.create_table()
-        employee = Employee.create("Raha", "Accountant", department)
+        employee = Employee.create("Raha", "Accountant", department.id)
 
         Review.create_table()
         sql = """
@@ -199,9 +199,9 @@ class TestReview:
         """
         row = CURSOR.execute(sql).fetchone()
 
-        review = Review.new_from_db(row)
+        review = Review.instance_from_db(row)
         assert ((row[0], row[1], row[2], row[3]) ==
-                (review.id, review.year, review.summary, review.employee.id) ==
+                (review.id, review.year, review.summary, review.employee_id) ==
                 (review.id, 2022, "Amazing coder!", employee.id))
 
     def test_gets_all(self):
@@ -211,20 +211,20 @@ class TestReview:
         department = Department.create("Payroll", "Building A, 5th Floor")
 
         Employee.create_table()
-        employee = Employee.create("Raha", "Accountant", department)
+        employee = Employee.create("Raha", "Accountant", department.id)
 
         Review.create_table()
-        review1 = Review.create(2020, "Great coder!", employee)
+        review1 = Review.create(2020, "Great coder!", employee.id)
         id1 = review1.id
-        review2 = Review.create(2000, "Awesome coders!", employee)
+        review2 = Review.create(2000, "Awesome coders!", employee.id)
         id2 = review2.id
 
         reviews = Review.get_all()
         assert (len(reviews) == 2)
-        assert ((reviews[0].id, reviews[0].year, reviews[0].summary, reviews[0].employee.id) ==
-                (review1.id, review1.year, review1.summary, review1.employee.id))
-        assert ((reviews[1].id, reviews[1].year, reviews[1].summary, reviews[1].employee.id) ==
-                (review2.id, review2.year, review2.summary, review2.employee.id))
+        assert ((reviews[0].id, reviews[0].year, reviews[0].summary, reviews[0].employee_id) ==
+                (review1.id, review1.year, review1.summary, review1.employee_id))
+        assert ((reviews[1].id, reviews[1].year, reviews[1].summary, reviews[1].employee_id) ==
+                (review2.id, review2.year, review2.summary, review2.employee_id))
 
     def test_finds_by_id(self):
         '''contains method "find_by_id()" that returns a Review instance corresponding to its db row retrieved by id.'''
@@ -233,20 +233,20 @@ class TestReview:
         department = Department.create("Payroll", "Building A, 5th Floor")
 
         Employee.create_table()
-        employee = Employee.create("Raha", "Accountant", department)
+        employee = Employee.create("Raha", "Accountant", department.id)
 
         Review.create_table()
-        review1 = Review.create(2020, "Great coder!", employee)
+        review1 = Review.create(2020, "Great coder!", employee.id)
         id1 = review1.id
-        review2 = Review.create(2000, "Awesome coder!", employee)
+        review2 = Review.create(2000, "Awesome coder!", employee.id)
         id2 = review2.id
 
         review = Review.find_by_id(review1.id)
-        assert ((review.id, review.year, review.summary, review.employee.id) ==
+        assert ((review.id, review.year, review.summary, review.employee_id) ==
                 (id1, 2020, "Great coder!", employee.id))
 
         review = Review.find_by_id(review2.id)
-        assert ((review.id, review.year, review.summary, review.employee.id) ==
+        assert ((review.id, review.year, review.summary, review.employee_id) ==
                 (id2, 2000, "Awesome coder!", employee.id))
 
         review = Review.find_by_id(3)
